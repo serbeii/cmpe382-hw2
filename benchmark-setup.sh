@@ -22,7 +22,7 @@ export -f generate_numbers_for_file # Make function available to subshells
 MAX_PROCS=$(nproc) # Get number of CPU cores, or set manually e.g., 8
 echo "Running with up to $MAX_PROCS parallel processes."
 
-TOTAL_FILES=10
+TOTAL_FILES=96
 
 for i in $(seq 1 $TOTAL_FILES); do
    generate_numbers_for_file "$i" & # Launch in background

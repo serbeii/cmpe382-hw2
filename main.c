@@ -19,13 +19,14 @@ int main(int argc, char** argv) {
         printf("Not enough arguments\n");
         return (1);
     }
-    // system("bash setup.sh");
+    // initialize necessary variables, threads and the semaphore
+    // handle cli arguments
     char* directory = argv[1];
     thread_count = atoi(argv[2]);
     bool thread_use[thread_count];
     pthread_t threads[thread_count];
     sem_init(&queue, 0, thread_count);
-    check_sem();
+    // check_sem();
     for (int i = 0; i < thread_count; i++) {
         thread_use[i] = false;
     }
@@ -34,7 +35,7 @@ int main(int argc, char** argv) {
     struct dirent* entry;
     DIR* dirp;
     dirp = opendir(directory);
-
+    // using readdir, count the number of files in the directory
     while ((entry = readdir(dirp)) != NULL) {
         if (entry->d_type == DT_REG) {
             file_count++;
@@ -43,6 +44,7 @@ int main(int argc, char** argv) {
     closedir(dirp);
     free(entry);
 
+    // thread dispatcher
     for (long i = 1; i <= file_count; i++) {
         sem_wait(&queue);
         // check_sem();
@@ -56,6 +58,7 @@ int main(int argc, char** argv) {
                        (void*)i);
         thread_use[i % thread_count] = true;
     }
+
     // wait for all threads to finish
     for (int i = 0; i < thread_count; i++) {
         if (thread_use[i % thread_count]) {
@@ -64,8 +67,10 @@ int main(int argc, char** argv) {
             thread_use[i % thread_count] = false;
         }
     }
+    printf("All threads have completed.\n");
 }
 
+// basic prime calculation function
 int is_prime(int num) {
     if (num <= 1) return 0;
     for (int i = 2; i * i <= num; i++) {
@@ -76,6 +81,8 @@ int is_prime(int num) {
     return 1;
 }
 
+// thread function
+// selects the file, runs is_prime for each entry
 void* find_primes(void* args) {
     long fileid = (long)args;
     char* filename = malloc(sizeof(char) * 20);
@@ -98,6 +105,7 @@ void* find_primes(void* args) {
     return NULL;
 }
 
+// debugging code
 int check_sem() {
     int semval;
     sem_getvalue(&queue, &semval);
